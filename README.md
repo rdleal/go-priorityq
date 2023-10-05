@@ -1,5 +1,8 @@
 # Keyed Priority Queue
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/rdleal/go-priorityq)](https://goreportcard.com/report/github.com/rdleal/go-priorityq)
+[![codecov](https://codecov.io/gh/rdleal/go-priorityq/graph/badge.svg?token=DEVXQHRRQD)](https://codecov.io/gh/rdleal/go-priorityq)
+
 A keyed priority queue is a data structure that allows you to associate keys with priority values
 and efficiently retrieve, update, and remove elements based on their priorities.
 This package offers concurrent-safe operations that leverages a binary heap to maintain the priority queue.
