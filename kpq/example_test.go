@@ -38,7 +38,7 @@ func Example() {
 	pq.Push("key2", 30)
 	pq.Push("key3", 50)
 
-	// Remove and retreive the element with the highest priority
+	// Remove and retrieve the element with the highest priority
 	key, value, ok := pq.Pop()
 	if !ok {
 		log.Fatal("priority queue is empty")
