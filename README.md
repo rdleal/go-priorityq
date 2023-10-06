@@ -1,5 +1,6 @@
 # Keyed Priority Queue
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/rdleal/go-priorityq/kpq.svg)](https://pkg.go.dev/github.com/rdleal/go-priorityq/kpq)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rdleal/go-priorityq)](https://goreportcard.com/report/github.com/rdleal/go-priorityq)
 [![codecov](https://codecov.io/gh/rdleal/go-priorityq/graph/badge.svg?token=DEVXQHRRQD)](https://codecov.io/gh/rdleal/go-priorityq)
 
@@ -62,6 +63,9 @@ Checking if a key exists in the priority queue:
 exists := pq.Contains("key3")
 fmt.Println("Key 'key3' exists:", exists)
 ```
+
+For more operations, check out the [GoDoc page](https://pkg.go.dev/github.com/rdleal/go-priorityq/kpq).
+
 # Testing
 
 Run unit tests:
