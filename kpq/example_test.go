@@ -62,3 +62,37 @@ func Example() {
 	// Key: "key2", Value: 30
 	// Key 'key3' exists: true
 }
+
+func ExampleKeyedPriorityQueue_Set() {
+	cmp := func(a, b int) bool {
+		return a < b
+	}
+	pq := kpq.NewKeyedPriorityQueue[string](cmp)
+
+	// Insert elements onto the priority queue
+	pq.Push("second", 42)
+	pq.Push("first", 30)
+	pq.Push("last", 50)
+
+	// Updates an element
+	pq.Set("last", 20)
+
+	k, v, ok := pq.Pop()
+	if !ok {
+		log.Fatal("priority queue is empty")
+	}
+
+	fmt.Printf("Key: %q, Value: %d\n", k, v)
+
+	// Inserts a new element
+	pq.Set("new_first", 1)
+	k, v, ok = pq.Pop()
+	if !ok {
+		log.Fatal("priority queue is empty")
+	}
+
+	fmt.Printf("Key: %q, Value: %d\n", k, v)
+	// Output:
+	// Key: "last", Value: 20
+	// Key: "new_first", Value: 1
+}
