@@ -99,12 +99,16 @@ func (pq *KeyedPriorityQueue[K, V]) Push(k K, v V) error {
 		return newKeyAlreadyExistsError(k)
 	}
 
+	pq.push(k, v)
+	return nil
+}
+
+func (pq *KeyedPriorityQueue[K, V]) push(k K, v V) {
 	n := len(pq.pm)
 	pq.pm = append(pq.pm, k)
 	pq.im[k] = n
 	pq.vals[k] = v
 	pq.swim(n)
-	return nil
 }
 
 // Pop removes and returns the highest priority key and value from the priority queue.
@@ -129,6 +133,20 @@ func (pq *KeyedPriorityQueue[K, V]) Pop() (K, V, bool) {
 	return k, v, true
 }
 
+// Set inserts a new entry in the priority queue with the given key and value,
+// if the key is not present in it; otherwise, it updates the priority value associated with the given key.
+func (pq *KeyedPriorityQueue[K, V]) Set(k K, v V) {
+	pq.mu.Lock()
+	defer pq.mu.Unlock()
+
+	if i, ok := pq.im[k]; ok {
+		pq.update(k, v, i)
+		return
+	}
+
+	pq.push(k, v)
+}
+
 // Update changes the priority value associated with the given key k to the given value v.
 // If there's no key k in the priority queue, it returns a KeyNotFoundError error.
 func (pq *KeyedPriorityQueue[K, V]) Update(k K, v V) error {
@@ -139,10 +157,15 @@ func (pq *KeyedPriorityQueue[K, V]) Update(k K, v V) error {
 	if !ok {
 		return newKeyNotFoundError(k)
 	}
+
+	pq.update(k, v, i)
+	return nil
+}
+
+func (pq *KeyedPriorityQueue[K, V]) update(k K, v V, i int) {
 	pq.vals[k] = v
 	pq.swim(i)
 	pq.sink(i, len(pq.vals))
-	return nil
 }
 
 // Peek returns the highest priority key and value from the priority queue.

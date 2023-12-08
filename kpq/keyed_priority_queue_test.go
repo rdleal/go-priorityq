@@ -439,6 +439,49 @@ func TestKeyedPriorityQueue_IsEmpty(t *testing.T) {
 	}
 }
 
+func TestKeyedPriorityQueue_Set(t *testing.T) {
+	pq := NewKeyedPriorityQueue[string](func(x, y int) bool {
+		return x < y
+	})
+
+	items := []struct {
+		key string
+		val int
+	}{
+		{key: "fourth", val: 10},
+		{key: "second", val: 8},
+		{key: "third", val: 9},
+		{key: "first", val: 6},
+		{key: "last", val: 20},
+	}
+
+	for _, item := range items {
+		err := pq.Push(item.key, item.val)
+		if err != nil {
+			t.Fatalf("Push(%v, %v): got unexpected error %v", item.key, item.val, err)
+		}
+	}
+
+	testCases := []struct {
+		k string
+		v int
+	}{
+		{"last", 5},
+		{"new_first", 1},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.k, func(t *testing.T) {
+			pq.Set(tc.k, tc.v)
+
+			if got, _ := pq.PeekValue(); got != tc.v {
+				t.Errorf("pq.PeekValue(): got value %d; want %d", got, tc.v)
+			}
+		})
+	}
+
+}
+
 func benchmarkKeyedPriorityQueue_PushPop(b *testing.B, n int) {
 	pq := NewKeyedPriorityQueue[int](func(a, b int) bool {
 		return a > b
