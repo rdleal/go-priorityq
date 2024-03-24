@@ -4,6 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
+	"os"
+	"text/tabwriter"
 
 	"github.com/rdleal/go-priorityq/kpq"
 )
@@ -64,35 +67,91 @@ func Example() {
 }
 
 func ExampleKeyedPriorityQueue_Set() {
-	cmp := func(a, b int) bool {
+	// This code implements Dijkstra's algorithm to find the shortest path in a
+	// weighted graph from a source vertex to all other vertices.
+	//
+	// This example shows how to change the priority in `KeyedPriorityQueue`
+	// when needed.
+	graph := struct {
+		len   int
+		edges []int
+	}{
+		len: 8,
+		// edges represents the adjacency matrix of a directed weighted Graph.
+		edges: []int{
+			0, 5, 0, 0, 9, 0, 0, 8,
+			0, 0, 12, 15, 0, 0, 0, 4,
+			0, 0, 0, 3, 0, 0, 11, 0,
+			0, 0, 0, 0, 0, 0, 9, 0,
+			0, 0, 0, 0, 0, 4, 20, 5,
+			0, 0, 1, 0, 0, 0, 13, 0,
+			0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 7, 0, 0, 6, 0, 0,
+		},
+	}
+
+	edge := func(u, v int) (weight int) {
+		return graph.edges[graph.len*u+v]
+	}
+
+	adj := func(v int) []int {
+		vertices := make([]int, 0)
+
+		for i := 0; i < graph.len; i++ {
+			if weight := edge(v, i); weight > 0 {
+				vertices = append(vertices, i)
+			}
+		}
+
+		return vertices
+	}
+
+	src := 0
+
+	distTo := make([]int, graph.len)
+	for i := 0; i < graph.len; i++ {
+		distTo[i] = math.MaxInt
+	}
+	distTo[src] = 0
+
+	// cmpFunc maintains the variant of a min priority queue,
+	// needed for relaxing all the edges from the source.
+	cmpFunc := func(a, b int) bool {
 		return a < b
 	}
-	pq := kpq.NewKeyedPriorityQueue[string](cmp)
+	pq := kpq.NewKeyedPriorityQueue[int](cmpFunc)
+	pq.Push(src, 0) // starts with source vertex.
 
-	// Insert elements onto the priority queue
-	pq.Push("second", 42)
-	pq.Push("first", 30)
-	pq.Push("last", 50)
-
-	// Updates an element
-	pq.Set("last", 20)
-
-	k, v, ok := pq.Pop()
-	if !ok {
-		log.Fatal("priority queue is empty")
+	for !pq.IsEmpty() {
+		u, dist, _ := pq.Pop()
+		// Iterate over vertices adjacent to vertex u, and relax each edge
+		// between them.
+		// Given a vertex u and v and a weighted edge e from u to v,
+		// the relaxation algorithm updates the value in the priority queue
+		// if the edge e provides a shorter path from u to v than previously known.
+		for _, v := range adj(u) {
+			weight := edge(u, v)
+			if distTo[v] > dist+weight {
+				distTo[v] = dist + weight
+				pq.Set(v, distTo[v])
+			}
+		}
 	}
 
-	fmt.Printf("Key: %q, Value: %d\n", k, v)
-
-	// Inserts a new element
-	pq.Set("new_first", 1)
-	k, v, ok = pq.Pop()
-	if !ok {
-		log.Fatal("priority queue is empty")
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
+	fmt.Fprintln(w, "Vertex\tDistance From Source")
+	for i := 0; i < graph.len; i++ {
+		fmt.Fprintf(w, "%3d\t%10d\n", i, distTo[i])
 	}
-
-	fmt.Printf("Key: %q, Value: %d\n", k, v)
+	w.Flush()
 	// Output:
-	// Key: "last", Value: 20
-	// Key: "new_first", Value: 1
+	// Vertex    Distance From Source
+	//   0                0
+	//   1                5
+	//   2               14
+	//   3               17
+	//   4                9
+	//   5               13
+	//   6               25
+	//   7                8
 }
